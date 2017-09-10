@@ -5,3 +5,4 @@ pytest-sanic
 tox-travis
 flake8
 flake8-isort
+flask
