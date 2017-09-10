@@ -11,6 +11,8 @@ from raven.processors import Processor
 class SanicSentry:
     def __init__(self, app=None):
         self.app = None
+        self.handler = None
+        self.client = None
         if app is not None:
             self.init_app(app)
 
