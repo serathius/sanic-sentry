@@ -1,12 +1,18 @@
+import asyncio
+import json
 import logging
-from unittest import mock
+import threading
+import zlib
 
 import sanic
 import sanic.response
 from sanic.websocket import WebSocketProtocol
 
+import flask
 import pytest
 import sanic_sentry
+from werkzeug.routing import PathConverter
+from werkzeug.serving import make_server
 
 
 @pytest.yield_fixture
@@ -30,10 +36,37 @@ def websocket_client(loop, app, test_client):
     return loop.run_until_complete(test_client(app, protocol=WebSocketProtocol))
 
 
-async def test_simple(app, client):
-    app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
-    plugin = sanic_sentry.SanicSentry(app)
-    plugin.client.send = mock.Mock()
+@pytest.fixture
+def mock_service():
+    with Service(host='127.0.0.1', port=8000) as service:
+        yield service
+
+
+@pytest.fixture
+def sentry_calls():
+    return []
+
+
+@pytest.fixture
+def sentry_url(sentry_mock):
+    return 'http://public:secret@127.0.0.1:8000/1'
+
+
+@pytest.fixture
+def sentry_mock(mock_service, sentry_calls):
+
+    @mock_service.app.route('/<everything:path>', methods=['POST'])
+    def handle_request(path):
+        sentry_calls.append((path, flask.request.mimetype,
+                             json.loads(zlib.decompress(flask.request.data).decode('utf-8'))))
+        return ''
+
+    return mock_service
+
+
+async def test_simple(app, client, sentry_url, sentry_calls):
+    app.config['SENTRY_DSN'] = sentry_url
+    sanic_sentry.SanicSentry(app)
 
     @app.route('/test')
     def simple(request):
@@ -43,13 +76,13 @@ async def test_simple(app, client):
     assert response.status == 200
     response_text = await response.text()
     assert response_text == 'text'
-    assert plugin.client.send.mock_calls == []
+    await asyncio.sleep(0.01)
+    assert len(sentry_calls) == 0
 
 
-async def test_exception(app, client):
-    app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
-    plugin = sanic_sentry.SanicSentry(app)
-    plugin.client.send = mock.Mock()
+async def test_exception(app, client, sentry_calls, sentry_url):
+    app.config['SENTRY_DSN'] = sentry_url
+    sanic_sentry.SanicSentry(app)
 
     @app.route('/test')
     def simple(request):
@@ -57,14 +90,26 @@ async def test_exception(app, client):
 
     response = await client.get('/test')
     assert response.status == 500
-    assert plugin.client.send.mock_calls == [mock.ANY]
+
+    await asyncio.sleep(0.01)
+    assert len(sentry_calls) == 1
+    assert sentry_calls[0][0] == 'api/1/store/'
+    assert sentry_calls[0][1] == 'application/octet-stream'
+    assert sentry_calls[0][2]['level'] == 40
+    assert sentry_calls[0][2]['tags'] == {}
+    assert sentry_calls[0][2]['project'] == '1'
+    assert sentry_calls[0][2]['repos'] == {}
+    assert set(sentry_calls[0][2]['extra'].keys()) == {'sys.argv', 'pathname', 'filename', 'stack_info', 'lineno',
+                                                       'thread', 'threadName', 'processName', 'process', 'asctime'}
+    assert len(sentry_calls[0][2]['breadcrumbs']['values']) == 1
+    assert sentry_calls[0][2]['breadcrumbs']['values'][0]['data'] == {}
+    assert 'python' in sentry_calls[0][2]['modules']
 
 
-async def test_warning(app, client):
-    app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
+async def test_warning(app, client, sentry_calls, sentry_url):
+    app.config['SENTRY_DSN'] = sentry_url
     app.config['SENTRY_LEVEL'] = logging.WARNING
-    plugin = sanic_sentry.SanicSentry(app)
-    plugin.client.send = mock.Mock()
+    sanic_sentry.SanicSentry(app)
 
     @app.route('/test')
     def simple(request):
@@ -75,13 +120,15 @@ async def test_warning(app, client):
     assert response.status == 200
     response_text = await response.text()
     assert response_text == 'text'
-    assert plugin.client.send.mock_calls == [mock.ANY]
+
+    await asyncio.sleep(0.01)
+    assert len(sentry_calls) == 1
+    assert sentry_calls[0][2]['level'] == 30
 
 
-async def test_warning_not_send(app, client):
-    app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
-    plugin = sanic_sentry.SanicSentry(app)
-    plugin.client.send = mock.Mock()
+async def test_warning_not_sent(app, client, sentry_calls, sentry_url):
+    app.config['SENTRY_DSN'] = sentry_url
+    sanic_sentry.SanicSentry(app)
 
     @app.route('/test')
     def simple(request):
@@ -92,13 +139,14 @@ async def test_warning_not_send(app, client):
     assert response.status == 200
     response_text = await response.text()
     assert response_text == 'text'
-    assert plugin.client.send.mock_calls == []
+
+    await asyncio.sleep(0.01)
+    assert len(sentry_calls) == 0
 
 
-async def test_error_handler(app, client):
-    app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
-    plugin = sanic_sentry.SanicSentry(app)
-    plugin.client.send = mock.Mock()
+async def test_error_handler(app, client, sentry_calls, sentry_url):
+    app.config['SENTRY_DSN'] = sentry_url
+    sanic_sentry.SanicSentry(app)
 
     class CustomException(Exception):
         pass
@@ -115,13 +163,14 @@ async def test_error_handler(app, client):
     assert response.status == 200
     response_text = await response.text()
     assert response_text == 'text'
-    assert plugin.client.send.mock_calls == []
+
+    await asyncio.sleep(0.01)
+    assert len(sentry_calls) == 0
 
 
-async def test_exception_in_error_handler(app, client):
-    app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
-    plugin = sanic_sentry.SanicSentry(app)
-    plugin.client.send = mock.Mock()
+async def test_exception_in_error_handler(app, client, sentry_calls, sentry_url):
+    app.config['SENTRY_DSN'] = sentry_url
+    sanic_sentry.SanicSentry(app)
 
     class CustomException(Exception):
         pass
@@ -136,13 +185,14 @@ async def test_exception_in_error_handler(app, client):
 
     response = await client.get('/test')
     assert response.status == 500
-    assert plugin.client.send.mock_calls == [mock.ANY]
+
+    await asyncio.sleep(0.01)
+    assert len(sentry_calls) == 1
 
 
-async def test_websocket(app, websocket_client):
-    app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
-    plugin = sanic_sentry.SanicSentry(app)
-    plugin.client.send = mock.Mock()
+async def test_websocket(app, websocket_client, sentry_calls, sentry_url):
+    app.config['SENTRY_DSN'] = sentry_url
+    sanic_sentry.SanicSentry(app)
 
     @app.websocket('/test')
     async def simple(request, ws):
@@ -153,13 +203,13 @@ async def test_websocket(app, websocket_client):
     assert msg.data == 'text'
     await ws_conn.close()
 
-    assert plugin.client.send.mock_calls == []
+    await asyncio.sleep(0.01)
+    assert len(sentry_calls) == 0
 
 
-async def test_websocket_exception(app, websocket_client):
-    app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
-    plugin = sanic_sentry.SanicSentry(app)
-    plugin.client.send = mock.Mock()
+async def test_websocket_exception(app, websocket_client, sentry_calls, sentry_url):
+    app.config['SENTRY_DSN'] = sentry_url
+    sanic_sentry.SanicSentry(app)
 
     @app.websocket('/test')
     async def simple(request, ws):
@@ -170,4 +220,48 @@ async def test_websocket_exception(app, websocket_client):
     assert msg.type.value == 258
     await ws_conn.close()
 
-    assert plugin.client.send.mock_calls == [mock.ANY]
+    await asyncio.sleep(0.01)
+    assert len(sentry_calls) == 1
+
+
+class EverythingConverter(PathConverter):
+    regex = '.*?'
+
+
+class Service:
+    def __init__(self, *, host, port):
+        self.host = host
+        self.port = port
+        self.app = flask.Flask('test')
+        self.app.url_map.converters['everything'] = EverythingConverter
+
+        self.srv = make_server(host=self.host, port=self.port, app=self.app)
+        self.server_thread = threading.Thread(target=self.run, daemon=True)
+
+    def run(self):
+        self.srv.serve_forever()
+
+    @property
+    def url(self):
+        return 'http://{host}:{port}'.format(
+            host=self.host, port=self.port)
+
+    def __repr__(self):
+        return '{cls}(url={url})'.format(
+            cls=self.__class__.__name__,
+            url=self.url,
+        )
+
+    def start(self):
+        self.server_thread.start()
+
+    def stop(self):
+        self.srv.shutdown()
+        self.server_thread.join()
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
