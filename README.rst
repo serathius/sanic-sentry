@@ -29,7 +29,7 @@ The plugin starts working automaticaly, but you can use it manually:
     from sanic_sentry import SanicSentry
 
     app = Sanic(__name__)
-    app.config['SANIC_DSN'] = 'http://public:secret@example.com/1'
+    app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
 
     SanicSentry.init_app(app)
 
