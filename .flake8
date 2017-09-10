@@ -1,0 +1,5 @@
+[flake8]
+exclude = .tox
+ignore = W503, E731
+max-line-length = 119
+max-complexity = 7
