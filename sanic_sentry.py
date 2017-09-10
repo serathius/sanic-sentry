@@ -5,7 +5,6 @@ import sanic
 import raven
 import raven_aiohttp
 from raven.handlers.logging import SentryHandler
-from raven.processors import Processor
 
 
 class SanicSentry:
@@ -26,21 +25,3 @@ class SanicSentry:
         logger.addHandler(self.handler)
         self.app = app
         self.app.sentry = self
-
-
-class RequestProcessor(Processor):
-    async def process(self, data, request=None):
-        if request is None:
-            return {}
-
-        data = {
-            'request': {
-                'url': "%s://%s%s" % (request.scheme, request.host, request.path),
-                'method': request.method,
-                'data': (await request.read()),
-                'query_string': request.query_string,
-                'headers': {k.title(): str(v) for k, v in request.headers.items()},
-            }
-        }
-
-        return data
