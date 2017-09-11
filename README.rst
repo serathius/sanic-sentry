@@ -38,5 +38,5 @@ Or use `init_app` to reverse dependency:
 
 .. code:: python
 >>> plugin = SanicSentry()
->>> SanicSentry().init_app(app)
+>>> plugin.init_app(app)
 
