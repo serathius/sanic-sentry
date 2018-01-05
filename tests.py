@@ -113,7 +113,11 @@ async def test_warning(app, client, sentry_calls, sentry_url):
 
     @app.route('/test')
     def simple(request):
-        logging.getLogger('sanic').warning('SOMETHING bad happen')
+        try:
+            from sanic.log import logger
+        except ImportError:
+            logger = logging.getLogger('sanic')
+        logger.warning('SOMETHING bad happen')
         return sanic.response.text('text')
 
     response = await client.get('/test')

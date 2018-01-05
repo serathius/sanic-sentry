@@ -6,6 +6,11 @@ import raven
 import raven_aiohttp
 from raven.handlers.logging import SentryHandler
 
+try:
+    from sanic.log import logger
+except ImportError:
+    logger = logging.getLogger('sanic')
+
 
 class SanicSentry:
     def __init__(self, app=None):
@@ -21,7 +26,6 @@ class SanicSentry:
             transport=raven_aiohttp.AioHttpTransport,
         )
         self.handler = SentryHandler(client=self.client, level=app.config.get('SENTRY_LEVEL', logging.ERROR))
-        logger = logging.getLogger('sanic')
         logger.addHandler(self.handler)
         self.app = app
         self.app.sentry = self
