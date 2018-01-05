@@ -1,8 +1,5 @@
--r requirements.txt
--e .
 pytest
 pytest-sanic
-tox-travis
 flake8
 flake8-isort
 flask
