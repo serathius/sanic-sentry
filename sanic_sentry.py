@@ -24,7 +24,7 @@ class SanicSentry:
         self.client = raven.Client(
             dsn=app.config['SENTRY_DSN'],
             transport=raven_aiohttp.AioHttpTransport,
-            **app.config.get('SENTRY_PARAMS')
+            **app.config.get('SENTRY_PARAMS', {})
         )
         self.handler = SentryHandler(client=self.client, level=app.config.get('SENTRY_LEVEL', logging.ERROR))
         logger.addHandler(self.handler)
