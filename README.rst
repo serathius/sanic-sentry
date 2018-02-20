@@ -42,10 +42,14 @@ Or use `init_app` to reverse dependency:
 
 *Optional parameters:* 
 
-**SENTRY_RELEASE**  - Configure a custom release for sentry
-Explained in https://docs.sentry.io/learn/releases/
+**SENTRY_PARAMS**  - Configure advanced parameters for sentry:
+Explained in https://docs.sentry.io/clients/python/advanced/
 
 .. code:: python
->>> app.config['SENTRY_RELEASE'] = 'myapp_v0.4'
+>>> app.config['SENTRY_PARAMS'] = {
+    "release": "0.3",
+    "environment": "production"
+    ...
+}
 
 
