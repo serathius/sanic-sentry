@@ -46,6 +46,7 @@ Or use `init_app` to reverse dependency:
 *Optional parameters:* 
 
 **SENTRY_PARAMS**  - Configure advanced parameters for sentry:
+
 Explained in https://docs.sentry.io/clients/python/advanced/
 
 .. code:: python
