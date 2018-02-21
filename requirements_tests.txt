@@ -3,3 +3,4 @@ pytest-sanic
 flake8
 flake8-isort
 flask
+collective.checkdocs
