@@ -5,10 +5,7 @@ from setuptools import setup
 
 
 def _read(fname):
-    try:
-        return open(op.join(op.dirname(__file__), fname)).read()
-    except IOError:
-        return ''
+    return open(op.join(op.dirname(__file__), fname)).read()
 
 
 install_requires = [
