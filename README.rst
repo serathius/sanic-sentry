@@ -47,9 +47,8 @@ Explained in https://docs.sentry.io/clients/python/advanced/
 
 .. code:: python
 >>> app.config['SENTRY_PARAMS'] = {
-    "release": "0.3",
-    "environment": "production"
-    ...
-}
+...     "release": "myapp_v0.4",
+...     "environment": "production",
+... }
 
 
