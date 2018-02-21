@@ -23,7 +23,8 @@ Usage
 
 To begin we'll set up a Sanic app:
 
-..
+.. code:: python
+
   >>> from sanic import Sanic
   >>> from sanic_sentry import SanicSentry
   >>> app = Sanic(__name__)
@@ -31,12 +32,14 @@ To begin we'll set up a Sanic app:
 
 To initialize plugin you can pass 'app' to __init__:
 
-..
+.. code:: python
+
   >>> plugin = SanicSentry(app)
 
 Or use `init_app` to reverse dependency:
 
-..
+.. code:: python
+
   >>> plugin = SanicSentry()
   >>> plugin.init_app(app)
 
@@ -45,10 +48,9 @@ Or use `init_app` to reverse dependency:
 **SENTRY_PARAMS**  - Configure advanced parameters for sentry:
 Explained in https://docs.sentry.io/clients/python/advanced/
 
-..
+.. code:: python
+
   >>> app.config['SENTRY_PARAMS'] = {
   ...     "release": "myapp_v0.4",
   ...     "environment": "production",
   ... }
-
-
