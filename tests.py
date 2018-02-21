@@ -80,11 +80,16 @@ async def test_simple(app, client, sentry_url, sentry_calls):
     assert len(sentry_calls) == 0
 
 
-@pytest.mark.parametrize('release', [None, 'myapp_v0.4'])
-async def test_exception(app, client, sentry_calls, sentry_url, release):
+@pytest.mark.parametrize('params', [
+    None,
+    {},
+    {'release': None},
+    {'release': 'myapp_v0.4'},
+])
+async def test_exception(app, client, sentry_calls, sentry_url, params):
     app.config['SENTRY_DSN'] = sentry_url
-    if release is not None:
-        app.config['SENTRY_RELEASE'] = release
+    if params is not None:
+        app.config['SENTRY_PARAMS'] = params
     sanic_sentry.SanicSentry(app)
 
     @app.route('/test')
@@ -102,10 +107,10 @@ async def test_exception(app, client, sentry_calls, sentry_url, release):
     assert sentry_calls[0][2]['tags'] == {}
     assert sentry_calls[0][2]['project'] == '1'
     assert sentry_calls[0][2]['repos'] == {}
-    if release is None:
-        assert 'release' not in sentry_calls[0][2]
+    if params and params.get('release'):
+        assert sentry_calls[0][2]['release'] == params.get('release')
     else:
-        assert sentry_calls[0][2]['release'] == release
+        assert 'release' not in sentry_calls[0][2]
     assert set(sentry_calls[0][2]['extra'].keys()) == {'sys.argv', 'pathname', 'filename', 'stack_info', 'lineno',
                                                        'thread', 'threadName', 'processName', 'process', 'asctime'}
     assert len(sentry_calls[0][2]['breadcrumbs']['values']) == 1
