@@ -22,7 +22,7 @@ class SanicSentry:
 
     def init_app(self, app: sanic.Sanic):
         self.client = raven.Client(
-            dsn=app.config['SENTRY_DSN'],
+            dsn=app.config.get('SENTRY_DSN', None),
             transport=raven_aiohttp.AioHttpTransport,
             **app.config.get('SENTRY_PARAMS', {})
         )
