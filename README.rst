@@ -43,6 +43,12 @@ Or use `init_app` to reverse dependency:
   >>> plugin = SanicSentry()
   >>> plugin.init_app(app)
 
+``SENTRY_DSN`` is not mandatory. Here is the process :
+
+- if ``app.config['SENTRY_DSN']`` is set, it use it
+- if not it will look at envrionment variable ``SENTRY_DSN``
+- finally if no ``SENTRY_DSN`` can be found, raven will not send anything to sentry.
+
 *Optional parameters:* 
 
 **SENTRY_PARAMS**  - Configure advanced parameters for sentry:
