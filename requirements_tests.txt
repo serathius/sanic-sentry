@@ -4,3 +4,4 @@ flake8
 flake8-isort
 flask
 collective.checkdocs
+Pygments
