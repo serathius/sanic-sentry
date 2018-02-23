@@ -4,6 +4,9 @@ Sanic-Sentry
 Sanic-Sentry -- Sentry integration to sanic web server.
 
 
+.. image:: https://codecov.io/gh/serathius/sanic-sentry/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/serathius/sanic-sentry
+
 Requirements
 ------------
 
