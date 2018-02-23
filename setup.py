@@ -14,7 +14,7 @@ install_requires = [
 
 setup(
     name='sanic-sentry',
-    version='0.1.5',
+    version='0.1.6',
     license='MIT',
     description='Sentry integration to sanic web server',
     long_description=_read('README.rst'),
