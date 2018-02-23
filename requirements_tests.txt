@@ -5,3 +5,4 @@ flake8-isort
 flask
 collective.checkdocs
 Pygments
+pytest-cov
