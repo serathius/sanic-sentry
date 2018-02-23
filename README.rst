@@ -19,16 +19,19 @@ Installation
 Usage
 -----
 
-**SENTRY_DSN**  - Sentry DSN for your application
-
-To begin we'll set up a Sanic app:
-
 .. code:: python
 
   >>> from sanic import Sanic
   >>> from sanic_sentry import SanicSentry
   >>> app = Sanic(__name__)
   >>> app.config['SENTRY_DSN'] = 'http://public:secret@example.com/1'
+
+*Optional parameters:* 
+
+**SENTRY_DSN**  - Sentry DSN for your application:
+
+If not set raven will fallback to SENTRY_DSN environment variable. Not setting either will disable raven.
+
 
 To initialize plugin you can pass 'app' to __init__:
 
@@ -43,7 +46,6 @@ Or use `init_app` to reverse dependency:
   >>> plugin = SanicSentry()
   >>> plugin.init_app(app)
 
-*Optional parameters:* 
 
 **SENTRY_PARAMS**  - Configure advanced parameters for sentry:
 
