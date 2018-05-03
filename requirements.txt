@@ -1,4 +1,4 @@
 sanic
 raven
 raven-aiohttp
-aiohttp<3.0.0
+aiohttp
