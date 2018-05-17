@@ -233,7 +233,7 @@ async def test_websocket_exception(app, websocket_client, sentry_calls, sentry_u
 
     ws_conn = await websocket_client.ws_connect('/test')
     msg = await ws_conn.receive()
-    assert msg.type.value == 258
+    assert msg.type.value in {257, 258}
     await ws_conn.close()
 
     await asyncio.sleep(0.01)
