@@ -7,7 +7,7 @@ Sanic-Sentry -- Sentry integration to sanic web server.
     :target: https://badge.fury.io/py/sanic-sentry
 
 .. image:: https://travis-ci.org/serathius/sanic-sentry.svg?branch=master
-    :target: https://travis-ci.org/serathius/sanic-sentry``
+    :target: https://travis-ci.org/serathius/sanic-sentry
 
 .. image:: https://codecov.io/gh/serathius/sanic-sentry/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/serathius/sanic-sentry
