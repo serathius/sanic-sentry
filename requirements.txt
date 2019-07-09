@@ -1,4 +1,4 @@
-sanic
+sanic>=18.12
 raven
 raven-aiohttp
 aiohttp

@@ -1,15 +1,11 @@
 import logging
 
 import sanic
+from sanic.log import logger
 
 import raven
 import raven_aiohttp
 from raven.handlers.logging import SentryHandler
-
-try:
-    from sanic.log import logger
-except ImportError:
-    logger = logging.getLogger('sanic')
 
 
 class SanicSentry:
