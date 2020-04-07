@@ -15,7 +15,7 @@ Sanic-Sentry -- Sentry integration to sanic web server.
 Requirements
 ------------
 
-- python >= 3.5
+- python >= 3.6
 
 Installation
 ------------
