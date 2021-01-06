@@ -18,7 +18,7 @@ import sanic_sentry
 
 @pytest.yield_fixture
 def app():
-    app = sanic.Sanic("test_sanic_app")
+    app = sanic.Sanic("test_sanic_app", register=False)
     yield app
 
 
