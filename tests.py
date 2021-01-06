@@ -10,14 +10,20 @@ from sanic.websocket import WebSocketProtocol
 
 import flask
 import pytest
-import sanic_sentry
 from werkzeug.routing import PathConverter
 from werkzeug.serving import make_server
+
+import sanic_sentry
 
 
 @pytest.yield_fixture
 def app():
-    app = sanic.Sanic("test_sanic_app")
+    try:
+        app = sanic.Sanic("test_sanic_app", register=False)
+    except TypeError as e:
+        if str(e) != "__init__() got an unexpected keyword argument 'register'":
+            raise
+        app = sanic.Sanic("test_sanic_app")
     yield app
 
 
