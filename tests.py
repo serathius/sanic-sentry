@@ -10,9 +10,10 @@ from sanic.websocket import WebSocketProtocol
 
 import flask
 import pytest
-import sanic_sentry
 from werkzeug.routing import PathConverter
 from werkzeug.serving import make_server
+
+import sanic_sentry
 
 
 @pytest.yield_fixture
