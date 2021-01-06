@@ -18,7 +18,12 @@ import sanic_sentry
 
 @pytest.yield_fixture
 def app():
-    app = sanic.Sanic("test_sanic_app", register=False)
+    try:
+        app = sanic.Sanic("test_sanic_app", register=False)
+    except TypeError as e:
+        if str(e) != "__init__() got an unexpected keyword argument 'register'":
+            raise
+        app = sanic.Sanic("test_sanic_app")
     yield app
 
 
