@@ -9,8 +9,8 @@ def _read(fname):
 
 
 install_requires = [
-    l for l in _read('requirements.txt').split('\n')
-    if l and not l.startswith('#')]
+    line for line in _read('requirements.txt').split('\n')
+    if line and not line.startswith('#')]
 
 setup(
     name='sanic-sentry',
